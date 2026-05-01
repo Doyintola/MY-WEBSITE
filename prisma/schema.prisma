@@ -1,0 +1,86 @@
+// Prisma schema for Akintola portfolio admin
+// Local dev: SQLite. Production (Vercel): swap provider to "postgresql" and set DATABASE_URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  role         String   @default("admin")
+  createdAt    DateTime @default(now())
+}
+
+// Generic key/value store for free-form copy blocks (hero, about bio, etc.)
+// `value` is JSON-encoded text so we can store strings, arrays, or objects.
+model SiteContent {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  n         String
+  year      String
+  title     String
+  desc      String
+  tags      String   // JSON array
+  href      String?
+  venue     String?
+  role      String?
+  image     String
+  order     Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ResearchPaper {
+  id        String   @id @default(cuid())
+  year      String
+  journal   String
+  title     String
+  desc      String
+  tags      String   // JSON array
+  href      String?
+  order     Int      @default(0)
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Expertise {
+  id        String   @id @default(cuid())
+  n         String
+  title     String
+  desc      String
+  icon      String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Stat {
+  id        String   @id @default(cuid())
+  num       String
+  label     String
+  sub       String?
+  order     Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+model MarqueeItem {
+  id        String   @id @default(cuid())
+  text      String
+  order     Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
