@@ -1,41 +1,42 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import PageHero from "@/components/PageHero";
 import Reveal from "@/components/Reveal";
+import FigurePlate from "@/components/FigurePlate";
+import { prisma } from "@/lib/db";
 
 export const metadata: Metadata = {
   title: "Field Notes",
   description:
-    "Slow essays on infrastructure, sustainability, and the politics of decision intelligence.",
+    "Slow essays on infrastructure, sustainability, decision intelligence and the work of evidence.",
 };
 
-const posts = [
-  {
-    n: "01",
-    issue: "Issue Nº 01",
-    eta: "Spring 2026",
-    title: "The Future of Net-Zero Infrastructure",
-    desc: "On the gap between net-zero rhetoric and the cost-base, capacity and carbon-stock realities of construction in developing economies.",
-    category: "Infrastructure",
-  },
-  {
-    n: "02",
-    issue: "Issue Nº 02",
-    eta: "Spring 2026",
-    title: "Circular Economy in Construction",
-    desc: "How a circular framing reorganises supply chains, contracts, and ultimately the moral economy of the building site.",
-    category: "Sustainability",
-  },
-  {
-    n: "03",
-    issue: "Issue Nº 03",
-    eta: "Summer 2026",
-    title: "Decision Intelligence for Infrastructure",
-    desc: "Bringing data, theory, and judgement together — and why the best decisions still feel uncomfortable.",
-    category: "Analytics",
-  },
-];
+export const dynamic = "force-dynamic";
 
-export default function BlogPage() {
+function parseTags(raw: string): string[] {
+  try {
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+function formatDate(d: Date) {
+  return new Date(d).toLocaleDateString("en-GB", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+export default async function BlogPage() {
+  const posts = await prisma.blogPost.findMany({
+    where: { published: true },
+    orderBy: { publishedAt: "desc" },
+  });
+
   return (
     <>
       <PageHero
@@ -52,74 +53,88 @@ export default function BlogPage() {
               <p className="flex items-center gap-3 font-mono text-[0.72rem] uppercase tracking-wider2 text-ink/60">
                 <span className="text-gold">[01]</span>
                 <span className="h-px w-12 bg-ink/30" />
-                <span>Forthcoming Essays</span>
+                <span>{posts.length === 1 ? "1 essay" : `${posts.length} essays`}</span>
               </p>
               <p className="font-mono text-[0.7rem] uppercase tracking-wider2 text-ink/50">
-                Subscribe via email →
+                Newest first
               </p>
             </div>
           </Reveal>
 
-          <div className="mt-12 grid gap-px bg-ink/15 md:grid-cols-3">
-            {posts.map((p, i) => (
-              <Reveal key={p.title} delay={i * 0.08}>
-                <article className="ed-card group flex h-full flex-col bg-cream-50 p-10 md:p-12">
-                  <div className="flex items-center justify-between font-mono text-[0.7rem] uppercase tracking-wider2 text-ink/60">
-                    <span className="text-gold">{p.n}</span>
-                    <span>{p.issue}</span>
-                  </div>
+          {posts.length === 0 ? (
+            <Reveal>
+              <p className="mt-16 max-w-xl rounded-md border border-dashed border-ink/20 p-8 font-mono text-sm text-ink/60">
+                No posts yet. The first essay is on its way.
+              </p>
+            </Reveal>
+          ) : (
+            <ol className="mt-12">
+              {posts.map((p, i) => (
+                <Reveal key={p.id} delay={i * 0.05}>
+                  <li>
+                    <Link
+                      href={`/blog/${p.slug}`}
+                      className="ed-card group block border-b border-ink/15 py-12 transition-colors hover:bg-cream-50/60"
+                    >
+                      <div className="grid grid-cols-12 gap-6">
+                        <div className="col-span-2 md:col-span-1">
+                          <span className="font-mono text-[0.75rem] uppercase tracking-wider2 text-gold">
+                            {String(posts.length - i).padStart(2, "0")}
+                          </span>
+                        </div>
 
-                  <p className="mt-10 font-mono text-[0.65rem] uppercase tracking-wider2 text-rust">
-                    Coming · {p.eta}
-                  </p>
-                  <h2 className="mt-4 font-display text-3xl leading-tight text-ink md:text-4xl">
-                    {p.title}
-                  </h2>
-                  <p className="mt-5 flex-1 text-base leading-relaxed text-ink/70">
-                    {p.desc}
-                  </p>
+                        {p.coverImage ? (
+                          <div className="col-span-10 md:col-span-3">
+                            <FigurePlate
+                              src={p.coverImage}
+                              alt={p.title}
+                              fig=""
+                              aspect="aspect-[4/5]"
+                              accent={i % 2 === 0 ? "gold" : "moss"}
+                              shape={i % 2 === 0 ? "bezel" : "bezel-alt"}
+                            />
+                          </div>
+                        ) : (
+                          <div className="hidden md:col-span-3 md:block" />
+                        )}
 
-                  <div className="mt-8 flex items-center justify-between border-t border-ink/15 pt-6">
-                    <span className="font-mono text-[0.65rem] uppercase tracking-wider2 text-ink/60">
-                      {p.category}
-                    </span>
-                    <span className="font-mono text-[0.65rem] uppercase tracking-wider2 text-ink/40">
-                      Draft
-                    </span>
-                  </div>
-                </article>
-              </Reveal>
-            ))}
-          </div>
+                        <div className="col-span-12 md:col-span-6">
+                          <p className="font-mono text-[0.7rem] uppercase tracking-wider2 text-ink/60">
+                            {formatDate(p.publishedAt)}
+                          </p>
+                          <h2 className="mt-3 font-display text-3xl leading-tight text-ink transition-colors group-hover:text-gold md:text-5xl">
+                            {p.title}
+                          </h2>
+                          {p.excerpt && (
+                            <p className="mt-5 max-w-3xl text-base leading-relaxed text-ink/70 md:text-lg">
+                              {p.excerpt}
+                            </p>
+                          )}
+                          <div className="mt-6 flex flex-wrap gap-2">
+                            {parseTags(p.tags).map((t) => (
+                              <span
+                                key={t}
+                                className="rounded-full border border-ink/20 px-3 py-1 font-mono text-[0.65rem] uppercase tracking-wider2 text-ink/70"
+                              >
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
 
-          {/* Newsletter */}
-          <Reveal>
-            <div className="mt-24 grid items-center gap-10 border border-ink/15 bg-cream-100/40 p-10 md:grid-cols-2 md:p-16">
-              <div>
-                <p className="font-mono text-[0.72rem] uppercase tracking-wider2 text-gold">
-                  ✉ The Quarterly
-                </p>
-                <h3 className="display mt-5 text-3xl text-ink md:text-5xl">
-                  Receive the next essay <em className="text-gold">first</em>.
-                </h3>
-                <p className="mt-4 max-w-md text-base leading-relaxed text-ink/70">
-                  No spam, no growth-hacking — just a thoughtful note when a
-                  new piece is published.
-                </p>
-              </div>
-              <form className="flex flex-col gap-3 sm:flex-row">
-                <input
-                  type="email"
-                  required
-                  placeholder="your@email.com"
-                  className="flex-1 border border-ink/20 bg-cream-50 px-5 py-4 font-mono text-sm text-ink placeholder:text-ink/40 focus:border-ink focus:outline-none"
-                />
-                <button type="submit" className="btn btn-ink">
-                  Subscribe ↗
-                </button>
-              </form>
-            </div>
-          </Reveal>
+                        <div className="col-span-12 flex items-center justify-end md:col-span-2">
+                          <span className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider2 text-ink transition-all group-hover:gap-4 group-hover:text-gold">
+                            Read
+                            <ArrowUpRight className="h-4 w-4 transition-transform group-hover:rotate-45" />
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  </li>
+                </Reveal>
+              ))}
+            </ol>
+          )}
         </div>
       </section>
     </>

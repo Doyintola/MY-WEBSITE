@@ -1,20 +1,20 @@
 import { prisma } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboard() {
-  const [projects, papers, expertise, stats, marquee] = await Promise.all([
+  const [posts, projects, certs, channels] = await Promise.all([
+    prisma.blogPost.count(),
     prisma.project.count(),
-    prisma.researchPaper.count(),
-    prisma.expertise.count(),
-    prisma.stat.count(),
-    prisma.marqueeItem.count(),
+    prisma.certificate.count(),
+    prisma.contactChannel.count(),
   ]);
 
   const cards = [
-    { label: "Projects", n: projects, href: "/admin/projects", accent: "bg-gold" },
-    { label: "Research papers", n: papers, href: "/admin/research", accent: "bg-moss" },
-    { label: "Expertise items", n: expertise, href: "/admin/expertise", accent: "bg-rust" },
-    { label: "Stats", n: stats, href: "/admin/stats", accent: "bg-ink" },
-    { label: "Marquee items", n: marquee, href: "/admin/stats", accent: "bg-gold-dark" },
+    { label: "Blog posts", n: posts, href: "/admin/blog", accent: "bg-gold" },
+    { label: "Projects", n: projects, href: "/admin/projects", accent: "bg-moss" },
+    { label: "Certificates", n: certs, href: "/admin/certificates", accent: "bg-rust" },
+    { label: "Contact channels", n: channels, href: "/admin/channels", accent: "bg-ink" },
   ];
 
   return (
@@ -23,14 +23,15 @@ export default async function AdminDashboard() {
         Editorial CMS / Dashboard
       </p>
       <h1 className="mt-3 font-display text-5xl text-ink md:text-6xl">
-        At a glance.
+        Welcome back.
       </h1>
       <p className="mt-3 max-w-2xl text-ink/70">
-        Manage every word and image on the published portfolio. Changes save
-        instantly and appear on the live site after a hard refresh.
+        Write posts, edit your bio, manage your certificates, projects and
+        contact details. Changes save instantly and appear on the live site
+        after a refresh.
       </p>
 
-      <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
           <a
             key={c.label}
@@ -51,14 +52,23 @@ export default async function AdminDashboard() {
           Quick actions
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
-          <a href="/admin/content" className="rounded-md bg-ink px-4 py-2 font-mono text-[0.7rem] uppercase tracking-wider2 text-cream-50 hover:bg-ink/85">
-            Edit hero copy
+          <a
+            href="/admin/blog"
+            className="rounded-md bg-ink px-4 py-2 font-mono text-[0.7rem] uppercase tracking-wider2 text-cream-50 hover:bg-ink/85"
+          >
+            Write a post
           </a>
-          <a href="/admin/projects" className="rounded-md border border-ink/30 px-4 py-2 font-mono text-[0.7rem] uppercase tracking-wider2 text-ink hover:bg-ink/5">
-            Add project
+          <a
+            href="/admin/content"
+            className="rounded-md border border-ink/30 px-4 py-2 font-mono text-[0.7rem] uppercase tracking-wider2 text-ink hover:bg-ink/5"
+          >
+            Edit bio
           </a>
-          <a href="/admin/research" className="rounded-md border border-ink/30 px-4 py-2 font-mono text-[0.7rem] uppercase tracking-wider2 text-ink hover:bg-ink/5">
-            Add research paper
+          <a
+            href="/admin/certificates"
+            className="rounded-md border border-ink/30 px-4 py-2 font-mono text-[0.7rem] uppercase tracking-wider2 text-ink hover:bg-ink/5"
+          >
+            Add certificate
           </a>
         </div>
       </div>

@@ -1,16 +1,26 @@
 "use client";
 import { useEffect, useState } from "react";
+import ImageField from "@/components/admin/ImageField";
+import MarkdownField from "@/components/admin/MarkdownField";
 
 export type ResourceField = {
   key: string;
   label: string;
-  type?: "text" | "textarea" | "url" | "number" | "tags";
+  type?: "text" | "textarea" | "url" | "number" | "tags" | "image" | "markdown" | "select" | "boolean";
   rows?: number;
   placeholder?: string;
+  /** Options for type === "select" */
+  options?: { value: string; label: string }[];
+  /** Help text rendered below the field */
+  hint?: string;
+  /** Cloudinary folder for type === "image" (defaults to "akintola") */
+  folder?: string;
 };
 
 export type ResourceConfig = {
   endpoint: string; // e.g. /api/admin/projects
+  /** Optional query string appended to GET (e.g. "?page=about") */
+  query?: string;
   title: string;
   subtitle: string;
   fields: ResourceField[];
@@ -29,7 +39,8 @@ export default function ResourceEditor({ config }: { config: ResourceConfig }) {
   const [creating, setCreating] = useState(false);
 
   async function load() {
-    const res = await fetch(config.endpoint, { cache: "no-store" });
+    const url = config.endpoint + (config.query ?? "");
+    const res = await fetch(url, { cache: "no-store" });
     const data = (await res.json()) as Item[];
     setItems(data);
     // initialise edit state from server values
@@ -46,6 +57,8 @@ export default function ResourceEditor({ config }: { config: ResourceConfig }) {
           } catch {
             row[f.key] = "";
           }
+        } else if (f.type === "boolean") {
+          row[f.key] = v ? "true" : "false";
         } else {
           row[f.key] = v == null ? "" : String(v);
         }
@@ -71,6 +84,8 @@ export default function ResourceEditor({ config }: { config: ResourceConfig }) {
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean);
+      } else if (f.type === "boolean") {
+        payload[f.key] = raw === "true";
       } else {
         payload[f.key] = raw;
       }
@@ -164,7 +179,69 @@ export default function ResourceEditor({ config }: { config: ResourceConfig }) {
                       <span className="font-mono text-[0.65rem] uppercase tracking-wider2 text-ink/60">
                         {f.label}
                       </span>
-                      {f.type === "textarea" ? (
+                      {f.type === "image" ? (
+                        <div className="mt-2">
+                          <ImageField
+                            value={row[f.key] ?? ""}
+                            onChange={(url) =>
+                              setEdits({
+                                ...edits,
+                                [item.id]: { ...row, [f.key]: url },
+                              })
+                            }
+                            folder={f.folder ?? "akintola"}
+                          />
+                        </div>
+                      ) : f.type === "markdown" ? (
+                        <div className="mt-2">
+                          <MarkdownField
+                            value={row[f.key] ?? ""}
+                            onChange={(v) =>
+                              setEdits({
+                                ...edits,
+                                [item.id]: { ...row, [f.key]: v },
+                              })
+                            }
+                            rows={f.rows ?? 6}
+                          />
+                        </div>
+                      ) : f.type === "select" ? (
+                        <select
+                          value={row[f.key] ?? ""}
+                          onChange={(e) =>
+                            setEdits({
+                              ...edits,
+                              [item.id]: { ...row, [f.key]: e.target.value },
+                            })
+                          }
+                          className="mt-2 block w-full rounded-md border border-ink/20 bg-cream-50 px-4 py-3 text-ink outline-none focus:border-gold"
+                        >
+                          {(f.options ?? []).map((o) => (
+                            <option key={o.value} value={o.value}>
+                              {o.label}
+                            </option>
+                          ))}
+                        </select>
+                      ) : f.type === "boolean" ? (
+                        <label className="mt-2 flex items-center gap-2 rounded-md border border-ink/20 bg-cream-50 px-4 py-3">
+                          <input
+                            type="checkbox"
+                            checked={row[f.key] === "true"}
+                            onChange={(e) =>
+                              setEdits({
+                                ...edits,
+                                [item.id]: {
+                                  ...row,
+                                  [f.key]: e.target.checked ? "true" : "false",
+                                },
+                              })
+                            }
+                          />
+                          <span className="font-mono text-[0.7rem] uppercase tracking-wider2 text-ink/70">
+                            {row[f.key] === "true" ? "Enabled" : "Disabled"}
+                          </span>
+                        </label>
+                      ) : f.type === "textarea" ? (
                         <textarea
                           rows={f.rows ?? 3}
                           value={row[f.key] ?? ""}
@@ -196,6 +273,11 @@ export default function ResourceEditor({ config }: { config: ResourceConfig }) {
                           placeholder={f.placeholder}
                           className="mt-2 block w-full rounded-md border border-ink/20 bg-cream-50 px-4 py-3 text-ink outline-none focus:border-gold"
                         />
+                      )}
+                      {f.hint && (
+                        <span className="mt-1 block font-mono text-[0.65rem] text-ink/50">
+                          {f.hint}
+                        </span>
                       )}
                     </label>
                   ))}

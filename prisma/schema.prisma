@@ -1,5 +1,5 @@
-// Prisma schema for Akintola portfolio admin
-// Local dev: SQLite. Production (Vercel): swap provider to "postgresql" and set DATABASE_URL.
+// Prisma schema for Akintola portfolio admin (simplified)
+// Local dev: postgresql via Neon/Supabase. See .env.
 
 generator client {
   provider = "prisma-client-js"
@@ -20,172 +20,79 @@ model User {
   createdAt    DateTime @default(now())
 }
 
-// Generic key/value store for free-form copy blocks (hero, about bio, etc.)
-// `value` is JSON-encoded text so we can store strings, arrays, or objects.
+// Generic key/value store for free-form copy (about bio, contact info, etc.)
+// `value` is JSON-encoded text.
 model SiteContent {
   key       String   @id
   value     String
   updatedAt DateTime @updatedAt
 }
 
+// Blog post / "Field Note"
+model BlogPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String   @default("")
+  coverImage  String?
+  body        String   // markdown
+  tags        String   @default("[]") // JSON array of strings
+  publishedAt DateTime @default(now())
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published, publishedAt])
+}
+
+// Certificates / credentials shown on About page
+model Certificate {
+  id        String   @id @default(cuid())
+  title     String
+  issuer    String?
+  year      String?
+  image     String?
+  href      String?
+  order     Int      @default(0)
+  published Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+}
+
+// Project / portfolio gallery item
 model Project {
   id        String   @id @default(cuid())
-  n         String
-  year      String
+  n         String   @default("")
+  year      String   @default("")
   title     String
-  desc      String
-  tags      String   // JSON array
+  desc      String   @default("")
+  tags      String   @default("[]")
   href      String?
   venue     String?
   role      String?
-  image     String
+  image     String   @default("")
   order     Int      @default(0)
   published Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model ResearchPaper {
-  id        String   @id @default(cuid())
-  year      String
-  journal   String
-  title     String
-  desc      String
-  tags      String   // JSON array
-  href      String?
-  order     Int      @default(0)
-  published Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Expertise {
-  id        String   @id @default(cuid())
-  n         String
-  title     String
-  desc      String
-  icon      String?
-  order     Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Stat {
-  id        String   @id @default(cuid())
-  num       String
-  label     String
-  sub       String?
-  order     Int      @default(0)
-  updatedAt DateTime @updatedAt
-}
-
-model MarqueeItem {
-  id        String   @id @default(cuid())
-  text      String
-  order     Int      @default(0)
-  updatedAt DateTime @updatedAt
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Editable surfaces — repeating items
-// ─────────────────────────────────────────────────────────────────────────
-
-model HeroSlide {
-  id        String   @id @default(cuid())
-  src       String
-  alt       String
-  tint      String   @default("gold")    // gold | moss | rust | ink
-  label     String
-  caption   String
-  position  String   @default("right center")
-  order     Int      @default(0)
-  published Boolean  @default(true)
-  updatedAt DateTime @updatedAt
-}
-
-// Brief / consulting offer rows on Contact page
-model Brief {
-  id        String   @id @default(cuid())
-  title     String
-  href      String?
-  order     Int      @default(0)
-  published Boolean  @default(true)
-  updatedAt DateTime @updatedAt
-}
-
-// Contact channels (email, phone, social) on Contact page
+// Contact channels (email, phone, social)
 model ContactChannel {
   id        String   @id @default(cuid())
-  label     String   // "Email", "Phone", "LinkedIn"…
-  value     String   // displayed value
-  href      String   // mailto:, tel:, https://
-  icon      String?  // optional icon key
+  label     String
+  value     String
+  href      String
+  icon      String?
   order     Int      @default(0)
   published Boolean  @default(true)
   updatedAt DateTime @updatedAt
 }
 
-// About page timeline rows
-model TimelineEntry {
-  id        String   @id @default(cuid())
-  year      String
-  title     String
-  body      String   // markdown
-  tag       String?
-  order     Int      @default(0)
-  published Boolean  @default(true)
-  updatedAt DateTime @updatedAt
-}
-
-// About page "highlights" / three movements
-model Highlight {
-  id        String   @id @default(cuid())
-  n         String   // "01", "02"…
-  title     String
-  body      String   // markdown
-  order     Int      @default(0)
-  updatedAt DateTime @updatedAt
-}
-
-// Sidebar "at a glance" rows on About page
+// "At a glance" sidebar facts on About page
 model AboutFact {
   id        String   @id @default(cuid())
-  k         String   // key/label
-  v         String   // value
-  order     Int      @default(0)
-  updatedAt DateTime @updatedAt
-}
-
-// Atelier section facts on Home page
-model AtelierFact {
-  id        String   @id @default(cuid())
   k         String
   v         String
   order     Int      @default(0)
   updatedAt DateTime @updatedAt
 }
-
-// PageHero spec rows for /about /portfolio /contact
-model PageHeroSpec {
-  id        String   @id @default(cuid())
-  page      String   // "about" | "portfolio" | "contact"
-  k         String
-  v         String
-  order     Int      @default(0)
-  updatedAt DateTime @updatedAt
-
-  @@index([page])
-}
-
-// Footer & navbar link rows
-model NavLink {
-  id        String   @id @default(cuid())
-  group     String   // "navbar" | "footer-primary" | "footer-social"
-  label     String
-  href      String
-  order     Int      @default(0)
-  updatedAt DateTime @updatedAt
-
-  @@index([group])
-}
-

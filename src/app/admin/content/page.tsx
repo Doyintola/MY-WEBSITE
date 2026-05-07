@@ -9,19 +9,14 @@ type Field = {
 };
 
 const FIELDS: Field[] = [
-  { key: "hero.eyebrow.left", label: "Hero · top-left status (e.g. Available for 2026)", type: "text" },
-  { key: "hero.eyebrow.right", label: "Hero · top-right (issue/location)", type: "text" },
-  { key: "hero.title.line1", label: "Hero title — line 1", type: "text" },
-  { key: "hero.title.line2", label: "Hero title — line 2 (italic / accent)", type: "text" },
-  { key: "hero.body", label: "Hero · body paragraph", type: "textarea", rows: 4 },
-  { key: "hero.cta.primary.label", label: "Hero · primary CTA label", type: "text" },
-  { key: "hero.cta.primary.href", label: "Hero · primary CTA link", type: "url" },
-  { key: "hero.cta.secondary.label", label: "Hero · secondary CTA label", type: "text" },
-  { key: "hero.cta.secondary.href", label: "Hero · secondary CTA link", type: "url" },
-  { key: "about.bio", label: "About · biography", type: "textarea", rows: 6 },
+  { key: "site.tagline", label: "Site tagline (small text under your name)", type: "text" },
+  { key: "home.intro.title", label: "Homepage intro · title", type: "text" },
+  { key: "home.intro.body", label: "Homepage intro · short body", type: "textarea", rows: 3 },
+  { key: "about.bio", label: "About · biography (Markdown — use blank lines between paragraphs)", type: "textarea", rows: 12 },
+  { key: "about.portrait", label: "About · portrait image path (e.g. /portraits/doyin-about.jpg)", type: "text" },
   { key: "contact.email", label: "Contact · email", type: "text" },
+  { key: "contact.phone", label: "Contact · phone", type: "text" },
   { key: "contact.location", label: "Contact · location", type: "text" },
-  { key: "contact.linkedin", label: "Contact · LinkedIn URL", type: "url" },
 ];
 
 export default function ContentEditor() {
@@ -63,14 +58,14 @@ export default function ContentEditor() {
   return (
     <div>
       <p className="font-mono text-[0.7rem] uppercase tracking-wider2 text-ink/60">
-        Editorial CMS / Hero & Copy
+        Editorial CMS / Site Copy
       </p>
       <h1 className="mt-3 font-display text-5xl text-ink md:text-6xl">
-        Hero & Copy.
+        Site Copy.
       </h1>
       <p className="mt-3 max-w-2xl text-ink/70">
-        Edit headline, intro paragraph, CTAs and contact details. Save once
-        you&apos;re done — changes appear live on the published site.
+        Edit your bio, homepage intro, and contact details. Save once you&apos;re
+        done — changes appear live on the published site.
       </p>
 
       <div className="mt-10 space-y-6">

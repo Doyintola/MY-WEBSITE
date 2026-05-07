@@ -11,13 +11,18 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const NAV = [
+const NAV: Array<{ heading?: string; href?: string; label?: string }> = [
   { href: "/admin", label: "Dashboard" },
-  { href: "/admin/content", label: "Hero & Copy" },
+  { heading: "Writing" },
+  { href: "/admin/blog", label: "Blog Posts" },
+  { heading: "About you" },
+  { href: "/admin/content", label: "Site Copy / Bio" },
+  { href: "/admin/about-facts", label: "About — Facts" },
+  { href: "/admin/certificates", label: "Certificates" },
+  { heading: "Work" },
   { href: "/admin/projects", label: "Projects" },
-  { href: "/admin/research", label: "Research" },
-  { href: "/admin/expertise", label: "Expertise" },
-  { href: "/admin/stats", label: "Stats & Marquee" },
+  { heading: "Contact" },
+  { href: "/admin/channels", label: "Contact Channels" },
 ];
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
@@ -50,16 +55,25 @@ export default async function AdminLayout({ children }: { children: ReactNode })
                 {session.user?.email}
               </p>
             </div>
-            <nav className="flex-1 p-4">
-              {NAV.map((n) => (
-                <Link
-                  key={n.href}
-                  href={n.href}
-                  className="block rounded-md px-3 py-2 font-mono text-[0.75rem] uppercase tracking-wider2 text-cream-50/80 transition-colors hover:bg-cream-50/10 hover:text-gold-light"
-                >
-                  {n.label}
-                </Link>
-              ))}
+            <nav className="flex-1 overflow-y-auto p-4">
+              {NAV.map((n, i) =>
+                n.heading ? (
+                  <p
+                    key={`h-${i}`}
+                    className="mt-5 mb-1 px-3 font-mono text-[0.6rem] uppercase tracking-wider2 text-gold-light/70"
+                  >
+                    {n.heading}
+                  </p>
+                ) : (
+                  <Link
+                    key={n.href}
+                    href={n.href!}
+                    className="block rounded-md px-3 py-2 font-mono text-[0.7rem] uppercase tracking-wider2 text-cream-50/80 transition-colors hover:bg-cream-50/10 hover:text-gold-light"
+                  >
+                    {n.label}
+                  </Link>
+                ),
+              )}
             </nav>
             <div className="border-t border-cream-50/15 p-4 space-y-2">
               <Link
